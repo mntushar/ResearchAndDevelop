@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cash Memo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Arial', sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .memo-container {
+            width: 148mm;
+            height: 210mm;
+            background: white;
+            padding: 15mm;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        
+        .top-header {
+            text-align: center;
+            padding-bottom: 3px;
+            margin-bottom: 5px;
+        }
+        
+        .top-header-name {
+            font-size: 11px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        .header {
+            text-align: center;
+            border-bottom: 3px double #333;
+            padding-bottom: 10px;
+            margin-bottom: 15px;
+        }
+        
+        .company-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .company-details {
+            font-size: 11px;
+            color: #555;
+            line-height: 1.4;
+        }
+        
+        .info-section {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+        
+        .info-left, .info-right {
+            line-height: 1.8;
+        }
+        
+        .label {
+            font-weight: bold;
+            display: inline-block;
+            width: 80px;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+            font-size: 12px;
+        }
+        
+        th {
+            color: black;
+            padding: 10px 8px;
+            text-align: left;
+            font-weight: bold;
+            border-bottom: 1px solid #ddd;
+            border-top: 1px solid #ddd;
+        }
+        
+        td {
+            padding: 10px 8px;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .text-right {
+            text-align: right;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .total-section {
+            margin-top: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+        
+        .payment-section {
+            flex: 0 0 45%;
+            font-size: 13px;
+        }
+        
+        .payment-row {
+            display: flex;
+            justify-content: flex-start;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        
+        .payment-label {
+            padding-right: 5px;
+            font-weight: bold;
+        }
+        
+        .payment-value {
+            padding-right: 8px;
+        }
+        
+        .amount-section {
+            flex: 0 0 45%;
+        }
+        
+        .total-row {
+            display: flex;
+            justify-content: flex-end;
+            padding: 5px 0;
+            font-size: 13px;
+        }
+        
+        .total-label {
+            width: 150px;
+            text-align: right;
+            padding-right: 20px;
+            font-weight: bold;
+        }
+        
+        .total-value {
+            width: 120px;
+            text-align: right;
+            padding-right: 8px;
+        }
+        
+        .grand-total {
+            margin-top: 5px;
+            padding: 8px 0;
+            font-size: 15px;
+            font-weight: bold;
+        }
+        
+        .footer {
+            margin-top: 5px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+        }
+        
+        .terms {
+            margin-top: 175px;
+            font-size: 10px;
+            color: #666;
+            line-height: 1.6;
+        }
+        
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+            }
+            .memo-container {
+                box-shadow: none;
+                margin: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="memo-container">
+      <div class="top-header">
+            <div class="top-header-name">CASH MEMO</div>
+        </div>
+        
+        <div class="header">
+            <div class="company-name">Your Company Name</div>
+            <div class="company-details">
+                Address: 123 Main Road, Dhaka-1200<br>
+                Phone: 01712-345678 | Email: info@company.com
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-left">
+                <div><span class="label">Memo No:</span> CM-2025-001</div>
+                <div><span class="label">Customer:</span> Rahim Ahmed</div>
+                <div><span class="label">Address:</span> Mirpur, Dhaka</div>
+            </div>
+            <div class="info-right">
+                <div><span class="label">Date:</span> 29/09/2025</div>
+                <div><span class="label">Mobile:</span> 01712-345678</div>
+            </div>
+        </div>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th class="text-center">SL</th>
+                    <th>Item Description</th>
+                    <th class="text-center">Qty</th>
+                    <th class="text-right">Price (BDT)</th>
+                    <th class="text-right">Total (BDT)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="text-center">1</td>
+                    <td>T-Shirt (White)</td>
+                    <td class="text-center">2</td>
+                    <td class="text-right">500.00</td>
+                    <td class="text-right">1,000.00</td>
+                </tr>
+                <tr>
+                    <td class="text-center">2</td>
+                    <td>Jeans Pant (Blue)</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">1,500.00</td>
+                    <td class="text-right">1,500.00</td>
+                </tr>
+                <tr>
+                    <td class="text-center">3</td>
+                    <td>Shoes</td>
+                    <td class="text-center">1</td>
+                    <td class="text-right">2,000.00</td>
+                    <td class="text-right">2,000.00</td>
+                </tr>
+            </tbody>
+        </table>
+        
+        <div class="total-section">
+          <div class="payment-section">
+            <div class="payment-row">
+                <div class="payment-label">Payment:</div>
+                <div class="payment-value">Cash</div>
+            </div>
+            <div class="payment-row">
+                <div class="payment-label">Status:</div>
+                <div class="payment-value">Paid</div>
+            </div>
+            <div class="payment-row">
+                <div class="payment-label">Note:</div>
+                <div class="payment-value">-</div>
+            </div>
+          </div>
+          
+          <div class="amount-section">
+            <div class="total-row">
+                <div class="total-label">Sub-Total:</div>
+                <div class="total-value">4,500.00</div>
+            </div>
+            <div class="total-row">
+                <div class="total-label">VAT (0%):</div>
+                <div class="total-value">0.00</div>
+            </div>
+            <div class="total-row">
+                <div class="total-label">Discount:</div>
+                <div class="total-value">-200.00</div>
+            </div>
+            <div class="total-row grand-total">
+                <div class="total-label">Grand Total:</div>
+                <div class="total-value">4,300.00</div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="terms">
+            <strong>Terms & Conditions:</strong> Products can be exchanged within 7 days of purchase. Memo must be preserved. Damaged or used products will not be accepted for return.
+        </div>
+        
+        <div class="footer">
+            Thank you for your business! Please visit again.
+        </div>
+    </div>
+</body>
+</html>

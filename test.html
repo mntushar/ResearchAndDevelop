@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Full Page Modal Viewer</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: Arial, sans-serif;
+    background: #111;
+    color: #fff;
+    overflow: hidden;
+  }
+
+  .modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    backdrop-filter: blur(20px);
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex; flex-direction: column;
+    z-index: 1000;
+  }
+
+  .modal-topbar {
+    position: sticky; top: 0; width: 100%;
+    background: rgba(20, 20, 20, 0.95);
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 20px; z-index: 1001;
+  }
+
+  .modal-topbar button {
+    background: none; border: none; color: white;
+    font-size: 16px; cursor: pointer; margin-left: 10px;
+  }
+
+  .viewer-container {
+    flex: 1; display: flex;
+    justify-content: center; align-items: center;
+    overflow: auto; position: relative;
+  }
+
+  .viewer-content {
+    width: 60%;
+    transition: transform 0.3s ease;
+    transform-origin: center center;
+  }
+
+  .viewer-content iframe,
+  .viewer-content img {
+    width: 100%;
+    height: 90vh;
+    border-radius: 8px;
+    border: none;
+  }
+
+  .zoom-controls {
+    position: absolute; bottom: 15px; left: 50%;
+    transform: translateX(-50%);
+    background: rgba(20, 20, 20, 0.9);
+    padding: 8px 15px; border-radius: 8px;
+    display: flex; gap: 12px;
+  }
+
+  .zoom-controls button {
+    background: #333; border: none; color: white;
+    padding: 6px 10px; border-radius: 4px; cursor: pointer;
+  }
+
+  .zoom-controls button:hover { background: #555; }
+
+  @media (max-width: 768px) {
+    .viewer-content { width: 90%; }
+  }
+
+  /* File Input Hidden but Triggerable */
+  #fileInput {
+    display: none;
+  }
+
+</style>
+</head>
+<body>
+
+<div class="modal">
+  <div class="modal-topbar">
+    <div>
+      <button id="closeBtn">✖ বন্ধ</button>
+      <button id="loadBtn">📂 ফাইল লোড</button>
+    </div>
+    <div>
+      <button id="downloadBtn">⬇ ডাউনলোড</button>
+      <button id="printBtn">🖨 প্রিন্ট</button>
+    </div>
+  </div>
+
+  <div class="viewer-container">
+    <div class="viewer-content" id="viewer">
+      <p>📄 এখানে PDF বা ছবি প্রদর্শিত হবে</p>
+    </div>
+
+    <div class="zoom-controls">
+      <button id="zoomIn">🔍+</button>
+      <button id="zoomOut">🔍−</button>
+      <button id="zoomReset">⟳</button>
+    </div>
+  </div>
+</div>
+
+<input type="file" id="fileInput" accept=".pdf,image/*" />
+
+<script>
+  const viewer = document.getElementById('viewer');
+  const zoomIn = document.getElementById('zoomIn');
+  const zoomOut = document.getElementById('zoomOut');
+  const zoomReset = document.getElementById('zoomReset');
+  const loadBtn = document.getElementById('loadBtn');
+  const fileInput = document.getElementById('fileInput');
+
+  let scale = 1;
+
+  // Zoom controls
+  zoomIn.addEventListener('click', () => {
+    scale += 0.2;
+    viewer.style.transform = `scale(${scale})`;
+  });
+
+  zoomOut.addEventListener('click', () => {
+    if (scale > 0.4) scale -= 0.2;
+    viewer.style.transform = `scale(${scale})`;
+  });
+
+  zoomReset.addEventListener('click', () => {
+    scale = 1;
+    viewer.style.transform = `scale(${scale})`;
+  });
+
+  // Load File
+  loadBtn.addEventListener('click', () => fileInput.click());
+
+  fileInput.addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      const result = e.target.result;
+      const fileType = file.type;
+
+      viewer.innerHTML = ""; // clear previous content
+
+      if (fileType.includes("pdf")) {
+        const iframe = document.createElement("iframe");
+        iframe.src = result;
+        viewer.appendChild(iframe);
+      } else if (fileType.includes("image")) {
+        const img = document.createElement("img");
+        img.src = result;
+        viewer.appendChild(img);
+      } else {
+        viewer.innerHTML = "<p>❌ Unsupported file type</p>";
+      }
+    };
+
+    reader.readAsDataURL(file); // Convert to Base64
+  });
+</script>
+
+</body>
+</html>
