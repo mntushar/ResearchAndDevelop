@@ -309,24 +309,24 @@ const invoiceHeaderData = {
 };
 
 const tableBody = [
-        // Header row
-        [
-            { text: 'SL', style: 'tableHeader', alignment: 'center' },
-            { text: 'Item Description', style: 'tableHeader' },
-            { text: 'Qty', style: 'tableHeader', alignment: 'center' },
-            { text: 'Price (BDT)', style: 'tableHeader', alignment: 'right' },
-            { text: 'Total (BDT)', style: 'tableHeader', alignment: 'right' }
-        ],
+    // Header row
+    [
+        { text: 'SL', style: 'tableHeader', alignment: 'center' },
+        { text: 'Item Description', style: 'tableHeader' },
+        { text: 'Qty', style: 'tableHeader', alignment: 'center' },
+        { text: 'Price (BDT)', style: 'tableHeader', alignment: 'right' },
+        { text: 'Total (BDT)', style: 'tableHeader', alignment: 'right' }
+    ],
 
-        // Data rows
-        ...memoData.items.map(item => [
-            { text: item.sl.toString(), alignment: 'center', style: 'tableCell' },
-            { text: item.description, style: 'tableCell' },
-            { text: item.qty.toString(), alignment: 'center', style: 'tableCell' },
-            { text: item.price.toFixed(2), alignment: 'right', style: 'tableCell' },
-            { text: item.total.toLocaleString('en-US', { minimumFractionDigits: 2 }), alignment: 'right', style: 'tableCell' }
-        ]),
-    ];
+    // Data rows
+    ...memoData.items.map(item => [
+        { text: item.sl.toString(), alignment: 'center', style: 'tableCell' },
+        { text: item.description, style: 'tableCell' },
+        { text: item.qty.toString(), alignment: 'center', style: 'tableCell' },
+        { text: item.price.toFixed(2), alignment: 'right', style: 'tableCell' },
+        { text: item.total.toLocaleString('en-US', { minimumFractionDigits: 2 }), alignment: 'right', style: 'tableCell' }
+    ]),
+];
 
 const invoiceButtomData = {
     discountAmount: memoData.discount.toString(),
@@ -343,10 +343,13 @@ const invoiceFooterData = {
     terms: 'Products can be exchanged within 7 days of purchase. Memo must be preserved.'
 };
 
-generateInvoice(
-    invoiceHeaderData,
-    tableBody,
-    invoiceButtomData,
-    invoiceFooterData
-);
+export default function runInvoice() {
+    generateInvoice(
+        invoiceHeaderData,
+        tableBody,
+        invoiceButtomData,
+        invoiceFooterData
+    );
+}
+
 

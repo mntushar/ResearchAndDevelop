@@ -1,6 +1,11 @@
 import { AsyncResource } from 'node:async_hooks';
 import { EventEmitter } from 'node:events';
 import { Worker } from 'node:worker_threads';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const kTaskInfo = Symbol('kTaskInfo');
 const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
@@ -39,24 +44,14 @@ export default class WorkerPool extends EventEmitter {
   }
 
   addNewWorker() {
-    const worker = new Worker(new URL('./worker_wrapper.js', import.meta.url));
+    const workerFile = path.resolve(__dirname, 'worker_wrapper.js'); // ✅ full path
+    const worker = new Worker(workerFile, { type: 'module' });
 
     worker.on('message', (result) => {
       // In case of success: Call the callback that was passed to `runTask`,
       // remove the `TaskInfo` associated with the Worker, and mark it as free
       // again.
-
-      // worker[kTaskInfo].done(null, result);
-      // worker[kTaskInfo] = null;
-      // this.freeWorkers.push(worker);
-      // this.emit(kWorkerFreedEvent);
-
-      const taskInfo = worker[kTaskInfo];
-      if (result && result.error) {
-        taskInfo.done(new Error(result.error), null);
-      } else {
-        taskInfo.done(null, result);
-      }
+      worker[kTaskInfo].done(null, result);
       worker[kTaskInfo] = null;
       this.freeWorkers.push(worker);
       this.emit(kWorkerFreedEvent);
