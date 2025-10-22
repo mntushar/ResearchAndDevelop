@@ -11,13 +11,15 @@ const kTaskInfo = Symbol('kTaskInfo');
 const kWorkerFreedEvent = Symbol('kWorkerFreedEvent');
 
 class WorkerPoolTaskInfo extends AsyncResource {
-  constructor(callback) {
+  constructor(resolve, reject) {
     super('WorkerPoolTaskInfo');
-    this.callback = callback;
+    this.resolve = resolve;
+    this.reject = reject;
   }
 
   done(err, result) {
-    this.runInAsyncScope(this.callback, null, err, result);
+    if (err) this.runInAsyncScope(this.reject, null, err);
+    else this.runInAsyncScope(this.resolve, null, result);
     this.emitDestroy(); // `TaskInfo`s are used only once.
   }
 }
@@ -30,25 +32,24 @@ export default class WorkerPool extends EventEmitter {
     this.freeWorkers = [];
     this.tasks = [];
 
-    for (let i = 0; i < numThreads; i++)
-      this.addNewWorker();
+    for (let i = 0; i < numThreads; i++) this.#addNewWorker();
 
     // Any time the kWorkerFreedEvent is emitted, dispatch
     // the next task pending in the queue, if any.
     this.on(kWorkerFreedEvent, () => {
       if (this.tasks.length > 0) {
-        const { scriptPath, task, callback } = this.tasks.shift();
-        this.runTask(scriptPath, task, callback);
+        const { scriptPath, task, resolve, reject } = this.tasks.shift();
+        this.#runTaskInternal(scriptPath, task, resolve, reject);
       }
     });
   }
 
-  addNewWorker() {
-    const workerFile = path.resolve(__dirname, 'worker_wrapper.js'); // ✅ full path
-    const worker = new Worker(workerFile, { type: 'module' });
+  #addNewWorker() {
+    const workerFile = path.resolve(__dirname, 'worker_wrapper.js');
+    const worker = new Worker(workerFile, { execArgv: [], argv: [] });
 
     worker.on('message', (result) => {
-      // In case of success: Call the callback that was passed to `runTask`,
+       // In case of success: Call the callback that was passed to `runTask`,
       // remove the `TaskInfo` associated with the Worker, and mark it as free
       // again.
       worker[kTaskInfo].done(null, result);
@@ -60,15 +61,13 @@ export default class WorkerPool extends EventEmitter {
     worker.on('error', (err) => {
       // In case of an uncaught exception: Call the callback that was passed to
       // `runTask` with the error.
-      if (worker[kTaskInfo])
-        worker[kTaskInfo].done(err, null);
-      else
-        this.emit('error', err);
+      if (worker[kTaskInfo]) worker[kTaskInfo].done(err, null);
+      else this.emit('error', err);
 
       // Remove the worker from the list and start a new Worker to replace the
       // current one.
       this.workers.splice(this.workers.indexOf(worker), 1);
-      this.addNewWorker();
+      this.#addNewWorker();
     });
 
     this.workers.push(worker);
@@ -76,20 +75,25 @@ export default class WorkerPool extends EventEmitter {
     this.emit(kWorkerFreedEvent);
   }
 
-  runTask(scriptPath, task, callback) {
-    if (this.freeWorkers.length === 0) {
+  async runTask(scriptPath, task) {
+    return new Promise((resolve, reject) => {
       // No free threads, wait until a worker thread becomes free.
-      this.tasks.push({ scriptPath, task, callback });
-      return;
-    }
+      if (this.freeWorkers.length === 0) {
+        this.tasks.push({ scriptPath, task, resolve, reject });
+        return;
+      }
+      this.#runTaskInternal(scriptPath, task, resolve, reject);
+    });
+  }
 
+  // task run by event
+  #runTaskInternal(scriptPath, task, resolve, reject) {
     const worker = this.freeWorkers.pop();
-    worker[kTaskInfo] = new WorkerPoolTaskInfo(callback);
+    worker[kTaskInfo] = new WorkerPoolTaskInfo(resolve, reject);
     worker.postMessage({ scriptPath, task });
   }
 
   close() {
-    for (const worker of this.workers)
-      worker.terminate();
+    for (const worker of this.workers) worker.terminate();
   }
 }

@@ -13,7 +13,7 @@ parentPort.on('message', async ({ scriptPath, task }) => {
     const scriptUrl = pathToFileURL(resolvedPath);
 
     // dynamic import
-    const module = await import(scriptUrl);
+    const module = await import(scriptUrl.href);
 
     if (typeof module.default !== 'function') {
       throw new Error(`Script ${scriptPath} must export a default function`);

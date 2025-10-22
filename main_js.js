@@ -14,22 +14,19 @@ function monitorMainThread(interval = 100) {
     }, interval);
 }
 
-monitorMainThread(); 
+monitorMainThread();
 
-const task = { a: 5, b: 5 };
-pool.runTask('./addition.js', task, (err, result) => {
-    console.log(`✅result:`, result);
-});
+(async () => {
+    const task = { a: 5, b: 5 };
+    var resultAdd = await pool.runTask('./addition.js', { iterations: 5_000_000 });
+    console.log(resultAdd);
 
+    const resultMulti = await pool.runTask('./multi.js', task);
+    console.log(resultMulti);
 
-pool.runTask('./multi.js', task, (err, result) => {
-    console.log(`✅result multi:`, result);
-});
+    await pool.runTask('./invoice_pdf_final.js', null);
 
-pool.runTask('./invoice_pdf_final.js', null, (err, result) => {
-    if(err)
-        console.log(`✅pdf error:`, err);
-    else
-        console.log(`✅pdf: PDF created successfully`);
-});
+    resultAdd = await pool.runTask('./addition.js', { iterations: 5_000_000 });
+    console.log(resultAdd);
+})();
 
