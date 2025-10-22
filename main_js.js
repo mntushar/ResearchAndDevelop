@@ -17,16 +17,48 @@ function monitorMainThread(interval = 100) {
 monitorMainThread();
 
 (async () => {
+    console.log('sync 1');
+    let resultAdd;
     const task = { a: 5, b: 5 };
-    var resultAdd = await pool.runTask('./addition.js', { iterations: 5_000_000 });
+    resultAdd = await pool.runTaskScriptPath('./addition.js', { iterations: 5_000_000 });
     console.log(resultAdd);
 
-    const resultMulti = await pool.runTask('./multi.js', task);
+    const resultMulti = await pool.runTaskScriptPath('./multi.js', task);
     console.log(resultMulti);
 
-    await pool.runTask('./invoice_pdf_final.js', null);
+    await pool.runTaskScriptPath('./invoice_pdf_final.js', null);
 
-    resultAdd = await pool.runTask('./addition.js', { iterations: 5_000_000 });
+    const code = `
+function heavyTask(task) {
+  const results = [];
+
+  function isPrime(n) {
+    if (n < 2) return false;
+    for (let i = 2; i * i <= n; i++) {
+      if (n % i === 0) return false;
+    }
+    return true;
+  }
+
+  for (let i = 2; i < task.iterations; i++) {
+    if (isPrime(i)) results.push(i);
+  }
+
+  return results.length;
+}
+
+return heavyTask(task);
+`;
+
+    resultAdd = await pool.runTaskScriptCode(code, { iterations: 5_000_000 });
+    console.log(resultAdd);
+
+    resultAdd = await pool.runTaskScriptCode(code, { iterations: 5_000_000 });
+    console.log(resultAdd);
+
+
+    resultAdd = await pool.runTaskScriptCode(code, { iterations: 5_000_000 });
     console.log(resultAdd);
 })();
 
+console.log('sync 2');

@@ -49,7 +49,7 @@ export default class WorkerPool extends EventEmitter {
     const worker = new Worker(workerFile, { execArgv: [], argv: [] });
 
     worker.on('message', (result) => {
-       // In case of success: Call the callback that was passed to `runTask`,
+      // In case of success: Call the callback that was passed to `runTask`,
       // remove the `TaskInfo` associated with the Worker, and mark it as free
       // again.
       worker[kTaskInfo].done(null, result);
@@ -75,23 +75,35 @@ export default class WorkerPool extends EventEmitter {
     this.emit(kWorkerFreedEvent);
   }
 
-  async runTask(scriptPath, task) {
+  async runTaskScriptPath(scriptPath, task) {
     return new Promise((resolve, reject) => {
       // No free threads, wait until a worker thread becomes free.
       if (this.freeWorkers.length === 0) {
         this.tasks.push({ scriptPath, task, resolve, reject });
         return;
       }
-      this.#runTaskInternal(scriptPath, task, resolve, reject);
+      this.#runTaskInternal({ scriptPath: scriptPath }, task, resolve, reject);
+    });
+  }
+
+  async runTaskScriptCode(scriptCode, task) {
+    return new Promise((resolve, reject) => {
+      // No free threads, wait until a worker thread becomes free.
+      if (this.freeWorkers.length === 0) {
+        this.tasks.push({ scriptCode, task, resolve, reject });
+        return;
+      }
+      this.#runTaskInternal({ scriptCode: scriptCode }, task, resolve, reject);
     });
   }
 
   // task run by event
-  #runTaskInternal(scriptPath, task, resolve, reject) {
+  #runTaskInternal(options, task, resolve, reject) {
     const worker = this.freeWorkers.pop();
     worker[kTaskInfo] = new WorkerPoolTaskInfo(resolve, reject);
-    worker.postMessage({ scriptPath, task });
+    worker.postMessage({ scriptPath: options?.scriptPath, scriptCode: options?.scriptCode, task });
   }
+
 
   close() {
     for (const worker of this.workers) worker.terminate();
