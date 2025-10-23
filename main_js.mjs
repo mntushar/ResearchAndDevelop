@@ -17,7 +17,7 @@ function monitorMainThread(interval = 100) {
 monitorMainThread();
 
 (async () => {
-  // let resultAdd;
+  let resultAdd;
   // const task = { a: 5, b: 5 };
   // resultAdd = await pool.runTaskScriptPath('./addition.js', { iterations: 5_000_000 });
   // console.log(resultAdd);
@@ -25,31 +25,31 @@ monitorMainThread();
   // const resultMulti = await pool.runTaskScriptPath('./multi.js', task);
   // console.log(resultMulti);
 
-  await pool.runTaskScriptPath('./invoice_pdf_run.mjs', null);
+  // await pool.runTaskScriptPath('./invoice_pdf_run.mjs', null);
 
-//   const codef = (task) => {
-//     const results = [];
+  const codef = (task) => {
+    const results = [];
 
-//     function isPrime(n) {
-//       if (n < 2) return false;
-//       for (let i = 2; i * i <= n; i++) {
-//         if (n % i === 0) return false;
-//       }
-//       return true;
-//     }
+    function isPrime(n) {
+      if (n < 2) return false;
+      for (let i = 2; i * i <= n; i++) {
+        if (n % i === 0) return false;
+      }
+      return true;
+    }
 
-//     for (let i = 2; i < task.iterations; i++) {
-//       if (isPrime(i)) results.push(i);
-//     }
+    for (let i = 2; i < task.iterations; i++) {
+      if (isPrime(i)) results.push(i);
+    }
 
-//     return results.length;
-//   };
+    return results.length;
+  };
 
-//   const codes = `
-//   const fn = ${codef.toString()};
-//   return fn(task);
-// `;
+  const codes = `
+  const fn = ${codef.toString()};
+  return fn(task);
+`;
 
-//   resultAdd = await pool.runTaskScriptCode(codes, { iterations: 5_000_000 });
-//   console.log(resultAdd);
+  resultAdd = await pool.runTaskScriptCode(codes, { iterations: 5_000_000 });
+  console.log(resultAdd);
 })();
