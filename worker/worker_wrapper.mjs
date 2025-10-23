@@ -1,7 +1,6 @@
 import { parentPort } from 'node:worker_threads';
 import { pathToFileURL } from 'node:url';
 import path from 'path';
-import vm from 'node:vm';
 
 parentPort.on('message', async ({ scriptPath, scriptCode, task }) => {
   try {
@@ -22,34 +21,38 @@ parentPort.on('message', async ({ scriptPath, scriptCode, task }) => {
       if (typeof module.default !== 'function') {
         throw new Error(`Script ${scriptPath} must export a default function`);
       }
-      
+
       result = await module.default(task);
     }
     else if (scriptCode) {
-      /// Execute script code in a vm context
-      const context = { task, result: null, console };
-      vm.createContext(context); // Create sandboxed context
+      let dependencies = {};
 
-      const wrappedCode = `
-        (async () => {
-          const fn = (task) => {
-            ${scriptCode}
-          };
-          result = await fn(task);
+      // add dependency module
+      if (task.dependencyPaths) {
+        for (const depPath of task.dependencyPaths) {
+          const resolvedPath = path.isAbsolute(depPath)
+            ? depPath
+            : path.resolve(process.cwd(), depPath);
+          const scriptUrl = pathToFileURL(resolvedPath);
+          const module = await import(scriptUrl.href);
+          const name = path.basename(depPath, path.extname(depPath));
+          dependencies[name] = module;
+        }
+      }
+
+      // Direct script code execution (no file)
+      const asyncFn = new Function('task', 'dependencies', `
+        return (async () => {
+          ${scriptCode}
         })();
-      `;
-
-      // Run code in vm
-      await vm.runInContext(wrappedCode, context);
-
-      result = context.result; // get result from vm context
+      `);
+      result = await asyncFn(task, dependencies);
     }
     else {
       throw new Error('Neither scriptPath nor scriptCode provided');
     }
 
     parentPort.postMessage(result);
-
   } catch (err) {
     parentPort.postMessage({ error: err.message });
   }

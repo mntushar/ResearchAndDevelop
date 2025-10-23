@@ -1,9 +1,8 @@
+import { memoData } from "./invoice_pdf_run.mjs";
 import { pool } from "./worker/worker_thread.mjs";
 
 (async () => {
-    console.log('ok');
-    // @ts-ignore
-    const codef = (data) => {
+    const codef = async (data, dependencies) => {
         const invoiceHeaderData = {
             companyName: 'Your Company Name',
             companyAddress: 'Address: 123 Main Road, Dhaka-1200',
@@ -51,23 +50,20 @@ import { pool } from "./worker/worker_thread.mjs";
             terms: 'Products can be exchanged within 7 days of purchase. Memo must be preserved.'
         };
 
-        data.dependencyFunction(
+        await dependencies['invoice_pdf_final'].default(
             invoiceHeaderData,
             tableBody,
             invoiceButtomData,
             invoiceFooterData
         );
-    }
+    };
 
     const codes = `
-  const fn = ${codef.toString()};
-  return fn(task);
-`;
-    const generateInvoice  = await import('./invoice_pdf_final.mjs');
-    console.log(generateInvoice);
-    const data = {
-        dependencyFunction: generateInvoice,
-        memoData: memoData
-    }
-    await pool.runTaskScriptCode(codes, { data });
+    const fn = ${codef.toString()};
+    return fn(task, dependencies);
+  `;
+
+    const data = { memoData, dependencyPaths: ['./invoice_pdf_final.mjs'] };
+
+    await pool.runTaskScriptCode(codes, data);
 })();
