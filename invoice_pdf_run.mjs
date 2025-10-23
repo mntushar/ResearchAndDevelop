@@ -1,4 +1,4 @@
-import generateInvoice from "./invoice_pdf_final";
+import generateInvoice from "./invoice_pdf_final.mjs";
 
 // Sample data - replace with your actual data
 export const memoData = {
@@ -69,7 +69,6 @@ const invoiceFooterData = {
 };
 
 export default function runInvoice() {
-    console.log('Generating invoice PDF...');
     generateInvoice(
         invoiceHeaderData,
         tableBody,

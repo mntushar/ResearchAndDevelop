@@ -63,7 +63,7 @@ import { pool } from "./worker/worker_thread";
   const fn = ${codef.toString()};
   return fn(task);
 `;
-    const generateInvoice  = await import('./invoice_pdf_final.js');
+    const generateInvoice  = await import('./invoice_pdf_final.mjs');
     const data = {
         dependencyFunction: generateInvoice,
         memoData: memoData
