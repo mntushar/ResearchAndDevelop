@@ -1,6 +1,7 @@
 import { parentPort } from 'node:worker_threads';
 import { pathToFileURL } from 'node:url';
 import path from 'path';
+import vm from 'node:vm';
 
 parentPort.on('message', async ({ scriptPath, scriptCode, task }) => {
   try {
@@ -25,13 +26,23 @@ parentPort.on('message', async ({ scriptPath, scriptCode, task }) => {
       result = await module.default(task);
     }
     else if (scriptCode) {
-      // Direct script code execution (no file)
-      const asyncFn = new Function('task', `
-        return (async () => {
-          ${scriptCode}
+      /// Execute script code in a vm context
+      const context = { task, result: null, console };
+      vm.createContext(context); // Create sandboxed context
+
+      const wrappedCode = `
+        (async () => {
+          const fn = (task) => {
+            ${scriptCode}
+          };
+          result = await fn(task);
         })();
-      `);
-      result = await asyncFn(task);
+      `;
+
+      // Run code in vm
+      await vm.runInContext(wrappedCode, context);
+
+      result = context.result; // get result from vm context
     }
     else {
       throw new Error('Neither scriptPath nor scriptCode provided');
