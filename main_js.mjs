@@ -1,4 +1,4 @@
-import { pool } from "./worker/worker_thread";
+import { pool } from "./worker/worker_thread.mjs";
 
 
 // Heartbeat to monitor main thread

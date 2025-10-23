@@ -1,7 +1,7 @@
-import { memoData } from "./pdf_main";
-import { pool } from "./worker/worker_thread";
+import { pool } from "./worker/worker_thread.mjs";
 
 (async () => {
+    console.log('ok');
     // @ts-ignore
     const codef = (data) => {
         const invoiceHeaderData = {
@@ -64,6 +64,7 @@ import { pool } from "./worker/worker_thread";
   return fn(task);
 `;
     const generateInvoice  = await import('./invoice_pdf_final.mjs');
+    console.log(generateInvoice);
     const data = {
         dependencyFunction: generateInvoice,
         memoData: memoData

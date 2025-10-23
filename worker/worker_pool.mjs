@@ -45,7 +45,7 @@ export default class WorkerPool extends EventEmitter {
   }
 
   #addNewWorker() {
-    const workerFile = path.resolve(__dirname, 'worker_wrapper.js');
+    const workerFile = path.resolve(__dirname, 'worker_wrapper.mjs');
     const worker = new Worker(workerFile, { execArgv: [], argv: [] });
 
     worker.on('message', (result) => {
