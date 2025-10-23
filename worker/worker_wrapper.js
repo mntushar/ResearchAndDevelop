@@ -21,11 +21,11 @@ parentPort.on('message', async ({ scriptPath, scriptCode, task }) => {
       if (typeof module.default !== 'function') {
         throw new Error(`Script ${scriptPath} must export a default function`);
       }
-
+      
       result = await module.default(task);
     }
     else if (scriptCode) {
-      // 🧠 Case 1: Direct script code execution (no file)
+      // Direct script code execution (no file)
       const asyncFn = new Function('task', `
         return (async () => {
           ${scriptCode}
