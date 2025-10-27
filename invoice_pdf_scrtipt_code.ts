@@ -1,7 +1,10 @@
+// @ts-ignore
 import { memoData } from "./invoice_pdf_run.mjs";
+// @ts-ignore
 import { pool } from "./worker/worker_thread.mjs";
 
 (async () => {
+    // @ts-ignore
     const codef = async (data, dependencies) => {
         const invoiceHeaderData = {
             companyName: 'Your Company Name',
@@ -26,6 +29,7 @@ import { pool } from "./worker/worker_thread.mjs";
             ],
 
             // Data rows
+            // @ts-ignore
             ...data.memoData.items.map(item => [
                 { text: item.sl.toString(), alignment: 'center', style: 'tableCell' },
                 { text: item.description, style: 'tableCell' },
@@ -58,10 +62,7 @@ import { pool } from "./worker/worker_thread.mjs";
         );
     };
 
-    const codes = `
-    const fn = ${codef.toString()};
-    return fn(task, dependencies);
-  `;
+    const codes = pool.functionToString(codef, codef.name);
 
     const data = { memoData, dependencyPaths: ['./invoice_pdf_final.mjs'] };
 

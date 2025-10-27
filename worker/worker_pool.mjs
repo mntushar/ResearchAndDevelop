@@ -25,20 +25,25 @@ class WorkerPoolTaskInfo extends AsyncResource {
 }
 
 export default class WorkerPool extends EventEmitter {
+  #numThreads;
+  #workers = [];
+  #freeWorkers = [];
+  #tasks = [];
+
   constructor(numThreads) {
     super();
-    this.numThreads = numThreads;
-    this.workers = [];
-    this.freeWorkers = [];
-    this.tasks = [];
+    this.#numThreads = numThreads;
+    this.#workers = [];
+    this.#freeWorkers = [];
+    this.#tasks = [];
 
     for (let i = 0; i < numThreads; i++) this.#addNewWorker();
 
     // Any time the kWorkerFreedEvent is emitted, dispatch
     // the next task pending in the queue, if any.
     this.on(kWorkerFreedEvent, () => {
-      if (this.tasks.length > 0) {
-        const { scriptPath, task, resolve, reject } = this.tasks.shift();
+      if (this.#tasks.length > 0) {
+        const { scriptPath, task, resolve, reject } = this.#tasks.shift();
         this.#runTaskInternal(scriptPath, task, resolve, reject);
       }
     });
@@ -54,7 +59,7 @@ export default class WorkerPool extends EventEmitter {
       // again.
       worker[kTaskInfo].done(null, result);
       worker[kTaskInfo] = null;
-      this.freeWorkers.push(worker);
+      this.#freeWorkers.push(worker);
       this.emit(kWorkerFreedEvent);
     });
 
@@ -66,20 +71,20 @@ export default class WorkerPool extends EventEmitter {
 
       // Remove the worker from the list and start a new Worker to replace the
       // current one.
-      this.workers.splice(this.workers.indexOf(worker), 1);
+      this.#workers.splice(this.#workers.indexOf(worker), 1);
       this.#addNewWorker();
     });
 
-    this.workers.push(worker);
-    this.freeWorkers.push(worker);
+    this.#workers.push(worker);
+    this.#freeWorkers.push(worker);
     this.emit(kWorkerFreedEvent);
   }
 
   async runTaskScriptPath(scriptPath, task) {
     return new Promise((resolve, reject) => {
       // No free threads, wait until a worker thread becomes free.
-      if (this.freeWorkers.length === 0) {
-        this.tasks.push({ scriptPath, task, resolve, reject });
+      if (this.#freeWorkers.length === 0) {
+        this.#tasks.push({ scriptPath, task, resolve, reject });
         return;
       }
       this.#runTaskInternal({ scriptPath: scriptPath }, task, resolve, reject);
@@ -89,8 +94,8 @@ export default class WorkerPool extends EventEmitter {
   async runTaskScriptCode(scriptCode, task) {
     return new Promise((resolve, reject) => {
       // No free threads, wait until a worker thread becomes free.
-      if (this.freeWorkers.length === 0) {
-        this.tasks.push({ scriptCode, task, resolve, reject });
+      if (this.#freeWorkers.length === 0) {
+        this.#tasks.push({ scriptCode, task, resolve, reject });
         return;
       }
       this.#runTaskInternal({ scriptCode: scriptCode }, task, resolve, reject);
@@ -99,13 +104,20 @@ export default class WorkerPool extends EventEmitter {
 
   // task run by event
   #runTaskInternal(options, task, resolve, reject) {
-    const worker = this.freeWorkers.pop();
+    const worker = this.#freeWorkers.pop();
     worker[kTaskInfo] = new WorkerPoolTaskInfo(resolve, reject);
     worker.postMessage({ scriptPath: options?.scriptPath, scriptCode: options?.scriptCode, task });
   }
 
 
   close() {
-    for (const worker of this.workers) worker.terminate();
+    for (const worker of this.#workers) worker.terminate();
+  }
+
+  functionToString(funtionObject, returnFuntionName) {
+    return `
+        const ${returnFuntionName} = ${funtionObject.toString()};
+        return ${returnFuntionName}(task, dependencies);
+      `;
   }
 }
