@@ -20,7 +20,7 @@ monitorMainThread();
   // example for file
   let resultAdd;
   const task = { a: 5, b: 5 };
-  resultAdd = await pool.runTaskScriptPath('./addition.js', task);
+  resultAdd = await pool.runTaskScriptPath('./addition.mjs', task);
   console.log(resultAdd);
 
 
@@ -67,7 +67,7 @@ monitorMainThread();
   };
   const codesd = pool.functionToString(codefd, codefd.name);
   const iterations = 5_000_000;
-  const data = { iterations, dependencyPaths: ['./addition.js'] };
+  const data = { iterations, dependencyPaths: ['./addition.mjs'] };
   resultAdd = await pool.runTaskScriptCode(codesd, data);
   console.log(resultAdd);
 })();
